@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Activity Log{% endblock %}
+{% block page_title %}Activity Log{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">System Activity</h3>
+    </div>
+    <div class="card-body">
+        {% if logs %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.user.get_full_name }}</td>
+                        <td><span class="badge badge-info">{{ log.get_action_display }}</span></td>
+                        <td>{{ log.description }}</td>
+                        <td>{{ log.created_at|date:"M d, Y - g:i A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No activity logged yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

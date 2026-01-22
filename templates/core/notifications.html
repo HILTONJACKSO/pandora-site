@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Your Notifications</h3>
+    </div>
+    <div class="card-body">
+        {% if notifications %}
+        {% for notification in notifications %}
+        <div style="padding: 15px; border-bottom: 1px solid var(--border); {% if not notification.is_read %}background: #f0f9ff;{% endif %}">
+            <div class="d-flex justify-between align-center">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0;">{{ notification.title }}</h4>
+                    <p style="margin: 8px 0 0 0;">{{ notification.message }}</p>
+                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                </div>
+                {% if notification.submission %}
+                <a href="{% url 'notification_read' notification.pk %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-center text-muted" style="padding: 60px 0;">
+            <i class="fas fa-bell-slash" style="font-size: 3rem; opacity: 0.2;"></i><br>
+            No notifications yet.
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

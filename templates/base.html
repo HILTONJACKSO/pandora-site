@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pandora Box{% endblock %} - Government Information Coordination System</title>
+    
+    <!-- Load static files -->
+    {% load static %}
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    <!-- Font Awesome for icons (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+    <!-- This is overridden by login page -->
+    
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <h2>Pandora Box</h2>
+                <p>One Government. One Voice.</p>
+                {% comment %} <img src="" alt="logo"/> {% endcomment %}
+            </div>
+            
+            <ul class="sidebar-menu">
+                <!-- Dashboard - All users -->
+                <li>
+                    <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-th-large"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <!-- Submissions - MAC Officers & MICAT -->
+                {% if user.is_mac_officer or user.is_micat_reviewer or user.is_admin %}
+                <li>
+                    <a href="{% url 'submission_list' %}" class="{% if 'submission' in request.path %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Submissions</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Create Submission - MAC Officers only -->
+                {% if user.is_mac_officer %}
+                <li>
+                    <a href="{% url 'submission_create' %}" class="{% if request.resolver_match.url_name == 'submission_create' %}active{% endif %}">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Upload Content</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Content Library - All users -->
+                <li>
+                    <a href="{% url 'content_library' %}" class="{% if request.resolver_match.url_name == 'content_library' %}active{% endif %}">
+                        <i class="fas fa-archive"></i>
+                        <span>Content Library</span>
+                    </a>
+                </li>
+                
+                <!-- User Management - Admin only -->
+                {% if user.is_admin %}
+                <li>
+                    <a href="{% url 'user_list' %}" class="{% if 'user' in request.path %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>Manage Users</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="{% url 'mac_list' %}" class="{% if 'mac' in request.path %}active{% endif %}">
+                        <i class="fas fa-building"></i>
+                        <span>Manage MACs</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Activity Log -->
+                <li>
+                    <a href="{% url 'activity_log' %}" class="{% if request.resolver_match.url_name == 'activity_log' %}active{% endif %}">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Log</span>
+                    </a>
+                </li>
+                
+                <!-- Notifications -->
+                <li>
+                    <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                        {% if unread_count and unread_count > 0 %}
+                        <span class="badge badge-danger" style="margin-left: auto;">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                
+                <!-- Profile -->
+                <li>
+                    <a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                        <i class="fas fa-user"></i>
+                        <span>My Profile</span>
+                    </a>
+                </li>
+                
+                <!-- Logout -->
+                <li>
+                    <a href="{% url 'logout' %}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+                
+                <div class="topbar-right">
+                    <!-- Search -->
+                    <div class="topbar-search">
+                        {% comment %} <i class="fas fa-search"></i> {% endcomment %}
+                        <input type="text" placeholder="Search...">
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="notification-badge">
+                        <a href="{% url 'notifications' %}">
+                            <i class="fas fa-bell" style="font-size: 1.3rem; color: var(--dark);"></i>
+                            {% if unread_count and unread_count > 0 %}
+                            <span class="badge-count">{{ unread_count }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    
+                    <!-- User Menu -->
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">{{ user.get_full_name }}</div>
+                            <div style="font-size: 0.85rem; color: var(--secondary);">{{ user.get_role_display }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <!-- Page Content -->
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    {% endblock body %}
+    
+    <!-- JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

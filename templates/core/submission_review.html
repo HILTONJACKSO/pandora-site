@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Submission{% endblock %}
+{% block page_title %}Review Submission{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'submission_detail' submission.pk %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Submission
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+    <!-- Left: Submission Preview -->
+    <div>
+        <div class="card">
+            <div class="card-header" style="background: var(--primary); color: white;">
+                <h3 style="color: white; margin: 0;">
+                    <i class="fas fa-file-alt"></i> Submission Preview
+                </h3>
+            </div>
+            <div class="card-body">
+                <h3>{{ submission.title }}</h3>
+                
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">MAC:</strong>
+                    {{ submission.mac.acronym }} - {{ submission.mac.name }}
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">Type:</strong>
+                    {{ submission.get_content_type_display }}
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">Submitted By:</strong>
+                    {{ submission.submitted_by.get_full_name }}
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">Current Status:</strong>
+                    <span class="badge badge-{{ submission.get_status_color }}">
+                        {{ submission.get_status_display }}
+                    </span>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">Description:</strong>
+                    <p style="margin-top: 10px; white-space: pre-wrap;">{{ submission.description }}</p>
+                </div>
+                
+                {% if tag_list %}
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">Tags:</strong>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                        {% for tag in tag_list %}
+                        <span class="badge badge-secondary">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div style="margin: 20px 0;">
+                    <strong style="color: var(--secondary);">File:</strong>
+                    <div style="margin-top: 10px;">
+                        <a href="{{ submission.file.url }}" download class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download File ({{ submission.get_file_extension }}, {{ submission.get_file_size }} MB)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right: Review Form -->
+    <div>
+        <div class="card">
+            <div class="card-header" style="background: var(--success); color: white;">
+                <h3 style="color: white; margin: 0;">
+                    <i class="fas fa-check-circle"></i> Review & Decision
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post" id="reviewForm">
+                    {% csrf_token %}
+                    
+                    <!-- Priority -->
+                    <div class="form-group">
+                        <label for="priority">Priority Level</label>
+                        <select id="priority" name="priority">
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="URGENT">Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Reviewer Comments -->
+                    <div class="form-group">
+                        <label for="reviewer_comments">Comments / Feedback</label>
+                        <textarea id="reviewer_comments" 
+                                  name="reviewer_comments" 
+                                  rows="5"
+                                  placeholder="Add your review comments here..."></textarea>
+                        <div class="form-help">These comments will be visible to the MAC officer</div>
+                    </div>
+                    
+                    <hr style="margin: 30px 0;">
+                    
+                    <h4 style="margin-bottom: 20px;">Decision</h4>
+                    
+                    <!-- Approve -->
+                    <div style="padding: 20px; background: #d1fae5; border-radius: 8px; border-left: 4px solid var(--success); margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                            <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success);"></i>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; color: var(--success);">Approve & Publish</h4>
+                                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">
+                                    Content meets standards and will be published
+                                </p>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" name="publish" checked style="width: auto;">
+                                <span>Publish to Content Library</span>
+                            </label>
+                        </div>
+                        <button type="submit" name="action" value="approve" class="btn btn-success btn-block">
+                            <i class="fas fa-check"></i> Approve Submission
+                        </button>
+                    </div>
+                    
+                    <!-- Return for Edits -->
+                    <div style="padding: 20px; background: #dbeafe; border-radius: 8px; border-left: 4px solid var(--primary); margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                            <i class="fas fa-redo" style="font-size: 2rem; color: var(--primary);"></i>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; color: var(--primary);">Return for Edits</h4>
+                                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">
+                                    Needs revisions before approval
+                                </p>
+                            </div>
+                        </div>
+                        <button type="submit" name="action" value="return" class="btn btn-primary btn-block"
+                                onclick="return confirm('Return this submission for edits?');">
+                            <i class="fas fa-redo"></i> Return for Edits
+                        </button>
+                    </div>
+                    
+                    <!-- Deny -->
+                    <div style="padding: 20px; background: #fee2e2; border-radius: 8px; border-left: 4px solid var(--danger);">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                            <i class="fas fa-times-circle" style="font-size: 2rem; color: var(--danger);"></i>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; color: var(--danger);">Deny Submission</h4>
+                                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">
+                                    Does not meet publication standards
+                                </p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="denial_reason">Denial Reason (Required)</label>
+                            <textarea id="denial_reason" 
+                                      name="denial_reason" 
+                                      rows="3"
+                                      placeholder="Explain why this submission is being denied..."></textarea>
+                        </div>
+                        <button type="submit" name="action" value="deny" class="btn btn-danger btn-block"
+                                onclick="return confirm('Are you sure you want to deny this submission? This action will notify the submitter.');">
+                            <i class="fas fa-times"></i> Deny Submission
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="card" style="background: #f8fafc; border: 2px dashed var(--border); margin-top: 20px;">
+            <div class="card-body">
+                <h4><i class="fas fa-lightbulb" style="color: #f59e0b;"></i> Review Guidelines</h4>
+                <ul style="margin: 15px 0 0 20px; line-height: 1.8; font-size: 0.95rem;">
+                    <li>Check for accuracy and clarity</li>
+                    <li>Ensure proper grammar and formatting</li>
+                    <li>Verify facts and data</li>
+                    <li>Confirm alignment with government messaging</li>
+                    <li>Provide constructive feedback</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validation for deny action
+document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    const action = e.submitter.value;
+    if (action === 'deny') {
+        const reason = document.getElementById('denial_reason').value.trim();
+        if (!reason) {
+            e.preventDefault();
+            alert('Please provide a denial reason.');
+            document.getElementById('denial_reason').focus();
+        }
+    }
+});
+</script>
+{% endblock %}

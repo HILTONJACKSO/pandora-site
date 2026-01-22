@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Content{% endblock %}
+{% block page_title %}Upload New Content{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Submit Content for Review</h3>
+        <p style="margin: 10px 0 0 0; color: var(--secondary); font-size: 0.95rem;">
+            Fill in all required fields and upload your file. MICAT will review and approve your submission.
+        </p>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Title -->
+            <div class="form-group">
+                <label for="title" class="required">Content Title</label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       placeholder="Enter a clear, descriptive title"
+                       required
+                       maxlength="300">
+                <div class="form-help">This will be the headline/title of your content</div>
+            </div>
+            
+            <!-- Content Type -->
+            <div class="form-group">
+                <label for="content_type" class="required">Content Type</label>
+                <select id="content_type" name="content_type" required>
+                    <option value="PRESS_RELEASE">Press Release</option>
+                    <option value="ANNOUNCEMENT">Announcement</option>
+                    <option value="SPEECH">Speech</option>
+                    <option value="PHOTO">Photo</option>
+                    <option value="VIDEO">Video</option>
+                    <option value="DOCUMENT">Document</option>
+                    <option value="OTHER">Other</option>
+                </select>
+                <div class="form-help">Select the type of content you're submitting</div>
+            </div>
+            
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description" class="required">Description / Summary</label>
+                <textarea id="description" 
+                          name="description" 
+                          rows="5"
+                          placeholder="Provide a detailed description of the content..."
+                          required></textarea>
+                <div class="form-help">Describe what this content is about and its purpose</div>
+            </div>
+            
+            <!-- Tags -->
+            <div class="form-group">
+                <label for="tags">Tags / Keywords</label>
+                <input type="text" 
+                       id="tags" 
+                       name="tags" 
+                       placeholder="health, covid-19, vaccination, public announcement">
+                <div class="form-help">Comma-separated keywords for easier search (e.g., health, covid, vaccine)</div>
+            </div>
+            
+            <!-- File Upload -->
+            <div class="form-group">
+                <label for="file" class="required">Upload File</label>
+                <input type="file" 
+                       id="file" 
+                       name="file" 
+                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.xlsx,.xls,.ppt,.pptx"
+                       required>
+                <div class="form-help">
+                    <strong>Accepted formats:</strong> PDF, DOC, DOCX, TXT, JPG, PNG, GIF, MP4, AVI, MOV, XLSX, XLS, PPT, PPTX<br>
+                    <strong>Maximum size:</strong> 50 MB
+                </div>
+            </div>
+            
+            <!-- Confidential Toggle -->
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" 
+                           id="is_confidential" 
+                           name="is_confidential"
+                           style="width: auto; margin: 0;">
+                    <span>Mark as Confidential</span>
+                </label>
+                <div class="form-help">Check this if the content contains sensitive information</div>
+            </div>
+            
+            <!-- Submission Info -->
+            <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                <h4 style="margin-top: 0;">Submission Information</h4>
+                <p style="margin: 8px 0;"><strong>Your MAC:</strong> {{ user.mac.acronym }} - {{ user.mac.name }}</p>
+                <p style="margin: 8px 0;"><strong>Submitted by:</strong> {{ user.get_full_name }}</p>
+                <p style="margin: 8px 0;"><strong>Initial Status:</strong> <span class="badge badge-warning">Pending Review</span></p>
+            </div>
+            
+            <!-- What Happens Next -->
+            <div style="background: #0D1282; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); margin: 25px 0;">
+                <h4 style="margin-top: 0; color: var(--primary);">
+                    <i class="fas fa-info-circle"></i> What Happens Next?
+                </h4>
+                <ol style="margin: 10px 0 0 20px; line-height: 1.8; color: white;">
+                    <li>Your submission will be sent to MICAT for review</li>
+                    <li>MICAT reviewers will evaluate the content</li>
+                    <li>You'll receive a notification when the status changes</li>
+                    <li>If approved, it will be published in the content library</li>
+                    <li>If changes are needed, you'll get feedback to make edits</li>
+                </ol>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="d-flex gap-2" style="margin-top: 30px;">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane"></i> Submit for Review
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tips Card -->
+<div class="card" style="background: #f8fafc; border: 2px dashed var(--border);">
+    <div class="card-body">
+        <h4><i class="fas fa-lightbulb" style="color: #f59e0b;"></i> Tips for Successful Submissions</h4>
+        <ul style="margin: 15px 0 0 20px; line-height: 1.8;">
+            <li>Use clear, concise titles that describe the content accurately</li>
+            <li>Provide detailed descriptions to help reviewers understand the context</li>
+            <li>Add relevant tags to make your content easily searchable</li>
+            <li>Ensure your files are properly formatted and error-free</li>
+            <li>Mark sensitive information as confidential</li>
+            <li>Double-check all information before submitting</li>
+        </ul>
+    </div>
+</div>
+
+
+
+{% endblock %}

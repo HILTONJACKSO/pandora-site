@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Message -->
+<div class="card">
+    <div class="card-body">
+        <h2>Welcome, {{ user.get_full_name }}!</h2>
+        <p class="text-muted">
+            You're logged in as <strong>{{ user.get_role_display }}</strong>
+            {% if user.mac %} at <strong>{{ user.mac.acronym }}</strong>{% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    {% if user.is_mac_officer %}
+        <!-- MAC Officer Stats -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Submissions</span>
+                <div class="stat-card-icon" style="background: #dbeafe; color: var(--primary);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.total }}</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Pending</span>
+                <div class="stat-card-icon" style="background: #fed7aa; color: var(--warning);">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.pending }}</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Under Review</span>
+                <div class="stat-card-icon" style="background: #cffafe; color: var(--info);">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.under_review }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Approved</span>
+                <div class="stat-card-icon" style="background: #d1fae5; color: var(--success);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.approved }}</div>
+        </div>
+    
+    {% elif user.is_micat_reviewer %}
+        <!-- MICAT Reviewer Stats -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Submissions</span>
+                <div class="stat-card-icon" style="background: #dbeafe; color: var(--primary);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.total }}</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Needs Review</span>
+                <div class="stat-card-icon" style="background: #fed7aa; color: var(--warning);">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.pending }}</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <span class="stat-card-title">In Progress</span>
+                <div class="stat-card-icon" style="background: #cffafe; color: var(--info);">
+                    <i class="fas fa-spinner"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.under_review }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <span class="stat-card-title">My Reviews</span>
+                <div class="stat-card-icon" style="background: #d1fae5; color: var(--success);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.my_reviews }}</div>
+        </div>
+    
+    {% elif user.is_admin %}
+        <!-- Admin Stats -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Submissions</span>
+                <div class="stat-card-icon" style="background: #dbeafe; color: var(--primary);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.total_submissions }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Users</span>
+                <div class="stat-card-icon" style="background: #d1fae5; color: var(--success);">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.total_users }}</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Active MACs</span>
+                <div class="stat-card-icon" style="background: #cffafe; color: var(--info);">
+                    <i class="fas fa-building"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.total_macs }}</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Pending Review</span>
+                <div class="stat-card-icon" style="background: #fed7aa; color: var(--warning);">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.pending }}</div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Recent Submissions -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Recent Submissions</h3>
+        <a href="{% url 'submission_list' %}" class="btn btn-primary btn-sm">View All</a>
+    </div>
+    <div class="card-body">
+        {% if recent_submissions %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>MAC</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in recent_submissions %}
+                    <tr>
+                        <td>
+                            <strong>{{ submission.title|truncatewords:8 }}</strong>
+                        </td>
+                        <td>{{ submission.mac.acronym }}</td>
+                        <td>{{ submission.get_content_type_display }}</td>
+                        <td>
+                            <span class="badge badge-{{ submission.get_status_color }}">
+                                {{ submission.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ submission.submitted_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'submission_detail' submission.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center" style="padding: 40px 0;">
+            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 15px;"></i>
+            No submissions yet.
+            {% if user.is_mac_officer %}
+            <br><a href="{% url 'submission_create' %}" class="btn btn-primary" style="margin-top: 15px;">
+                <i class="fas fa-plus"></i> Create Your First Submission
+            </a>
+            {% endif %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Recent Activity</h3>
+        <a href="{% url 'activity_log' %}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    <div class="card-body">
+        {% if recent_activity %}
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% for log in recent_activity %}
+            <div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; gap: 15px;">
+                <div style="flex-shrink: 0;">
+                    <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                        {{ log.user.first_name|first|upper }}{{ log.user.last_name|first|upper }}
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">{{ log.user.get_full_name }}</div>
+                    <div style="font-size: 0.9rem; color: var(--secondary);">
+                        {{ log.description }}
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--secondary); margin-top: 3px;">
+                        <i class="fas fa-clock"></i> {{ log.created_at|timesince }} ago
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted text-center" style="padding: 40px 0;">No activity yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions (MAC Officers) -->
+{% if user.is_mac_officer %}
+<div class="card" style="background: #0D1282; color: white; border: none;">
+    <div class="card-body" style="text-align: center; padding: 40px;">
+        <h3 style="color: white; margin-bottom: 15px;">Ready to submit content?</h3>
+        <p style="opacity: 0.9; margin-bottom: 25px;">Upload press releases, announcements, photos, and more for MICAT review.</p>
+        <a href="{% url 'submission_create' %}" class="btn btn-lg" style="background: white; color: #0D1282; font-weight: 600;">
+            <i class="fas fa-upload"></i> Upload New Content
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

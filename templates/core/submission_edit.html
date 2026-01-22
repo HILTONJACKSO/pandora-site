@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Submission{% endblock %}
+{% block page_title %}Edit Submission{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'submission_detail' submission.pk %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Submission
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Edit: {{ submission.title }}</h3>
+        <p style="margin: 10px 0 0 0; color: var(--secondary);">
+            Update your submission information. Changes will reset the status to Pending if it was Returned.
+        </p>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Title -->
+            <div class="form-group">
+                <label for="title" class="required">Content Title</label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       value="{{ submission.title }}"
+                       required
+                       maxlength="300">
+            </div>
+            
+            <!-- Content Type -->
+            <div class="form-group">
+                <label for="content_type" class="required">Content Type</label>
+                <select id="content_type" name="content_type" required>
+                    <option value="PRESS_RELEASE" {% if submission.content_type == 'PRESS_RELEASE' %}selected{% endif %}>Press Release</option>
+                    <option value="ANNOUNCEMENT" {% if submission.content_type == 'ANNOUNCEMENT' %}selected{% endif %}>Announcement</option>
+                    <option value="SPEECH" {% if submission.content_type == 'SPEECH' %}selected{% endif %}>Speech</option>
+                    <option value="PHOTO" {% if submission.content_type == 'PHOTO' %}selected{% endif %}>Photo</option>
+                    <option value="VIDEO" {% if submission.content_type == 'VIDEO' %}selected{% endif %}>Video</option>
+                    <option value="DOCUMENT" {% if submission.content_type == 'DOCUMENT' %}selected{% endif %}>Document</option>
+                    <option value="OTHER" {% if submission.content_type == 'OTHER' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description" class="required">Description / Summary</label>
+                <textarea id="description" 
+                          name="description" 
+                          rows="5"
+                          required>{{ submission.description }}</textarea>
+            </div>
+            
+            <!-- Tags -->
+            <div class="form-group">
+                <label for="tags">Tags / Keywords</label>
+                <input type="text" 
+                       id="tags" 
+                       name="tags" 
+                       value="{{ submission.tags }}"
+                       placeholder="health, covid-19, vaccination">
+                <div class="form-help">Comma-separated keywords</div>
+            </div>
+            
+            <!-- Current File Info -->
+            <div class="form-group">
+                <label>Current File</label>
+                <div style="padding: 15px; background: #f8fafc; border-radius: 8px; margin-bottom: 10px;">
+                    <i class="fas fa-file"></i> 
+                    <strong>{{ submission.file.name|slice:"11:" }}</strong>
+                    <span style="color: var(--secondary);">
+                        ({{ submission.get_file_extension }}, {{ submission.get_file_size }} MB)
+                    </span>
+                    <br>
+                    <a href="{{ submission.file.url }}" download class="btn btn-sm btn-primary" style="margin-top: 10px;">
+                        <i class="fas fa-download"></i> Download Current File
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Replace File (Optional) -->
+            <div class="form-group">
+                <label for="file">Replace File (Optional)</label>
+                <input type="file" 
+                       id="file" 
+                       name="file" 
+                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.xlsx,.xls,.ppt,.pptx">
+                <div class="form-help">
+                    Leave empty to keep the current file. Upload a new file to replace it.
+                </div>
+            </div>
+            
+            <!-- Confidential Toggle -->
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" 
+                           id="is_confidential" 
+                           name="is_confidential"
+                           {% if submission.is_confidential %}checked{% endif %}
+                           style="width: auto; margin: 0;">
+                    <span>Mark as Confidential</span>
+                </label>
+            </div>
+            
+            <!-- Status Info -->
+            {% if submission.status == 'RETURNED' %}
+            <div style="background: #dbeafe; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); margin: 25px 0;">
+                <h4 style="margin-top: 0; color: var(--primary);">
+                    <i class="fas fa-info-circle"></i> Status Will Change
+                </h4>
+                <p style="margin: 0;">
+                    After saving your edits, this submission will be changed from 
+                    <strong>Returned for Edits</strong> to <strong>Pending Review</strong>.
+                    MICAT will be notified to review your changes.
+                </p>
+            </div>
+            {% endif %}
+            
+            <!-- Buttons -->
+            <div class="d-flex gap-2" style="margin-top: 30px;">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'submission_detail' submission.pk %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

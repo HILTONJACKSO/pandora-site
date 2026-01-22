@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Total Users</span>
+            <div class="stat-card-icon" style="background: #dbeafe; color: var(--primary);">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ role_counts.all }}</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Active Users</span>
+            <div class="stat-card-icon" style="background: #d1fae5; color: var(--success);">
+                <i class="fas fa-user-check"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ role_counts.active }}</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <span class="stat-card-title">MAC Officers</span>
+            <div class="stat-card-icon" style="background: #fed7aa; color: var(--warning);">
+                <i class="fas fa-user-tie"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ role_counts.mac_officer }}</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <span class="stat-card-title">MICAT Reviewers</span>
+            <div class="stat-card-icon" style="background: #cffafe; color: var(--info);">
+                <i class="fas fa-user-shield"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ role_counts.micat }}</div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="card">
+    <div class="card-body" style="padding: 20px 25px;">
+        <div class="d-flex justify-between align-center" style="flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'user_list' %}" 
+                   class="btn {% if not current_role %}btn-primary{% else %}btn-outline{% endif %} btn-sm">
+                    All Roles
+                </a>
+                <a href="?role=ADMIN" 
+                   class="btn {% if current_role == 'ADMIN' %}btn-danger{% else %}btn-outline{% endif %} btn-sm">
+                    Admins ({{ role_counts.admin }})
+                </a>
+                <a href="?role=MICAT_REVIEWER" 
+                   class="btn {% if current_role == 'MICAT_REVIEWER' %}btn-info{% else %}btn-outline{% endif %} btn-sm">
+                    MICAT ({{ role_counts.micat }})
+                </a>
+                <a href="?role=MAC_OFFICER" 
+                   class="btn {% if current_role == 'MAC_OFFICER' %}btn-warning{% else %}btn-outline{% endif %} btn-sm">
+                    MAC Officers ({{ role_counts.mac_officer }})
+                </a>
+                <a href="?status=active" 
+                   class="btn {% if current_status == 'active' %}btn-success{% else %}btn-outline{% endif %} btn-sm">
+                    Active
+                </a>
+                <a href="?status=inactive" 
+                   class="btn {% if current_status == 'inactive' %}btn-secondary{% else %}btn-outline{% endif %} btn-sm">
+                    Inactive
+                </a>
+            </div>
+            
+            <a href="{% url 'user_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New User
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="d-flex gap-2" style="flex-wrap: wrap;">
+            <input type="text" 
+                   name="search" 
+                   placeholder="Search by name, username, email..." 
+                   value="{{ search_query }}"
+                   style="flex: 1; min-width: 250px;">
+            
+            <select name="mac" style="min-width: 200px;">
+                <option value="">All MACs</option>
+                {% for mac in macs %}
+                <option value="{{ mac.id }}" {% if current_mac == mac.id|stringformat:"s" %}selected{% endif %}>
+                    {{ mac.acronym }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            {% if current_role %}
+            <input type="hidden" name="role" value="{{ current_role }}">
+            {% endif %}
+            
+            {% if current_status %}
+            <input type="hidden" name="status" value="{{ current_status }}">
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+            
+            {% if search_query or current_mac %}
+            <a href="{% url 'user_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">All Users</h3>
+    </div>
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>MAC</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td><strong>{{ user.username }}</strong></td>
+                        <td>{{ user.get_full_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'ADMIN' %}
+                            <span class="badge badge-danger">{{ user.get_role_display }}</span>
+                            {% elif user.role == 'MICAT_REVIEWER' %}
+                            <span class="badge badge-info">{{ user.get_role_display }}</span>
+                            {% else %}
+                            <span class="badge badge-warning">{{ user.get_role_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.mac %}
+                            {{ user.mac.acronym }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                            <span class="badge badge-success">Active</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'user_edit' user.pk %}" 
+                               class="btn btn-sm btn-secondary"
+                               title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            {% if user != request.user %}
+                            <a href="{% url 'user_delete' user.pk %}" 
+                               class="btn btn-sm btn-danger"
+                               title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted" style="padding: 60px 0;">
+            No users found.
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

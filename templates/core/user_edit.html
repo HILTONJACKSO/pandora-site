@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User{% endblock %}
+{% block page_title %}Edit User: {{ edit_user.username }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title">Edit User: {{ edit_user.username }}</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" value="{{ edit_user.username }}" disabled>
+                <div class="form-help">Username cannot be changed</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="first_name" class="required">First Name</label>
+                    <input type="text" id="first_name" name="first_name" value="{{ edit_user.first_name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name" class="required">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" value="{{ edit_user.last_name }}" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="required">Email</label>
+                <input type="email" id="email" name="email" value="{{ edit_user.email }}" required>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="role" class="required">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="ADMIN" {% if edit_user.role == 'ADMIN' %}selected{% endif %}>System Administrator</option>
+                        <option value="MICAT_REVIEWER" {% if edit_user.role == 'MICAT_REVIEWER' %}selected{% endif %}>MICAT Reviewer/Editor</option>
+                        <option value="MAC_OFFICER" {% if edit_user.role == 'MAC_OFFICER' %}selected{% endif %}>MAC PR Officer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mac">MAC</label>
+                    <select id="mac" name="mac">
+                        <option value="">None</option>
+                        {% for mac in macs %}
+                        <option value="{{ mac.id }}" {% if edit_user.mac and edit_user.mac.id == mac.id %}selected{% endif %}>
+                            {{ mac.acronym }} - {{ mac.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="phone" value="{{ edit_user.phone }}">
+            </div>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="is_active" {% if edit_user.is_active %}checked{% endif %} style="width: auto;">
+                    <span>Active (can login)</span>
+                </label>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'user_list' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

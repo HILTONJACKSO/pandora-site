@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Submissions{% endblock %}
+{% block page_title %}All Submissions{% endblock %}
+
+{% block content %}
+<!-- Filter Tabs -->
+<div class="card">
+    <div class="card-body" style="padding: 20px 25px;">
+        <div class="d-flex justify-between align-center" style="flex-wrap: wrap; gap: 15px;">
+            <!-- Status Filter Tabs -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'submission_list' %}" 
+                   class="btn {% if not current_status %}btn-primary{% else %}btn-outline{% endif %} btn-sm">
+                    All ({{ status_counts.all }})
+                </a>
+                <a href="?status=PENDING" 
+                   class="btn {% if current_status == 'PENDING' %}btn-warning{% else %}btn-outline{% endif %} btn-sm">
+                    Pending ({{ status_counts.pending }})
+                </a>
+                <a href="?status=UNDER_REVIEW" 
+                   class="btn {% if current_status == 'UNDER_REVIEW' %}btn-info{% else %}btn-outline{% endif %} btn-sm">
+                    Under Review ({{ status_counts.under_review }})
+                </a>
+                <a href="?status=APPROVED" 
+                   class="btn {% if current_status == 'APPROVED' %}btn-success{% else %}btn-outline{% endif %} btn-sm">
+                    Approved ({{ status_counts.approved }})
+                </a>
+                <a href="?status=RETURNED" 
+                   class="btn {% if current_status == 'RETURNED' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">
+                    Returned ({{ status_counts.returned }})
+                </a>
+                <a href="?status=DENIED" 
+                   class="btn {% if current_status == 'DENIED' %}btn-danger{% else %}btn-outline{% endif %} btn-sm">
+                    Denied ({{ status_counts.denied }})
+                </a>
+            </div>
+            
+            <!-- New Submission Button (MAC Officers only) -->
+            {% if user.is_mac_officer %}
+            <a href="{% url 'submission_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Submission
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="d-flex gap-2" style="flex-wrap: wrap;">
+            <!-- Search -->
+            <input type="text" 
+                   name="search" 
+                   placeholder="Search by title, description, tags..." 
+                   value="{{ search_query }}"
+                   style="flex: 1; min-width: 250px;">
+            
+            <!-- MAC Filter (for MICAT/Admin) -->
+            {% if macs %}
+            <select name="mac" style="min-width: 200px;">
+                <option value="">All MACs</option>
+                {% for mac in macs %}
+                <option value="{{ mac.id }}" {% if current_mac == mac.id|stringformat:"s" %}selected{% endif %}>
+                    {{ mac.acronym }}
+                </option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            
+            <!-- Keep status filter -->
+            {% if current_status %}
+            <input type="hidden" name="status" value="{{ current_status }}">
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+            
+            {% if search_query or current_mac %}
+            <a href="{% url 'submission_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Submissions Table -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            {% if current_status %}
+                {{ current_status|title }} Submissions
+            {% else %}
+                All Submissions
+            {% endif %}
+        </h3>
+    </div>
+    <div class="card-body">
+        {% if submissions %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Title</th>
+                        {% if not user.is_mac_officer %}
+                        <th>MAC</th>
+                        {% endif %}
+                        <th>Type</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>
+                            <strong>{{ submission.title|truncatewords:10 }}</strong>
+                            {% if submission.is_confidential %}
+                            <span class="badge badge-danger" style="margin-left: 5px;">
+                                <i class="fas fa-lock"></i> Confidential
+                            </span>
+                            {% endif %}
+                        </td>
+                        {% if not user.is_mac_officer %}
+                        <td>
+                            <strong>{{ submission.mac.acronym }}</strong>
+                        </td>
+                        {% endif %}
+                        <td>{{ submission.get_content_type_display }}</td>
+                        <td>{{ submission.submitted_by.get_full_name }}</td>
+                        <td>
+                            <span class="badge badge-{{ submission.get_status_color }}">
+                                {{ submission.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ submission.submitted_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'submission_detail' submission.pk %}" 
+                               class="btn btn-sm btn-primary"
+                               title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            
+                            {% comment %} {% if submission.can_be_edited_by user %} {% endcomment %}
+                            {% if user.is_admin or user == submission.submitted_by and submission.status == 'PENDING' or submission.status == 'RETURNED' %}
+                            <a href="{% url 'submission_edit' submission.pk %}" 
+                               class="btn btn-sm btn-secondary"
+                               title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center" style="padding: 60px 20px;">
+            <i class="fas fa-inbox" style="font-size: 4rem; opacity: 0.2; display: block; margin-bottom: 20px;"></i>
+            <h3 style="color: var(--secondary);">No submissions found</h3>
+            <p class="text-muted">
+                {% if search_query %}
+                    Try adjusting your search terms.
+                {% elif current_status %}
+                    No submissions with this status yet.
+                {% else %}
+                    {% if user.is_mac_officer %}
+                        Get started by creating your first submission!
+                        <br><br>
+                        <a href="{% url 'submission_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Submission
+                        </a>
+                    {% else %}
+                        No submissions have been created yet.
+                    {% endif %}
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Help Card -->
+<div class="card" style="background: #f8fafc; border: 2px dashed var(--border);">
+    <div class="card-body">
+        <h4><i class="fas fa-info-circle" style="color: var(--info);"></i> Submission Status Guide</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 15px;">
+            <div>
+                <span class="badge badge-warning">Pending</span>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Waiting for MICAT review</p>
+            </div>
+            <div>
+                <span class="badge badge-info">Under Review</span>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Being reviewed by MICAT</p>
+            </div>
+            <div>
+                <span class="badge badge-success">Approved</span>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Approved and published</p>
+            </div>
+            <div>
+                <span class="badge badge-primary">Returned</span>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Needs edits from MAC</p>
+            </div>
+            <div>
+                <span class="badge badge-danger">Denied</span>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Not approved for publication</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

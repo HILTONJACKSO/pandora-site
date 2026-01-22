@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+<!-- Override the entire body for login page -->
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Header -->
+        <div class="login-header">
+            <h1>🔐 Pandora Box</h1>
+            <p>Government Information Coordination System</p>
+            <p style="font-size: 0.85rem; margin-top: 10px;">One Government. One Voice. One Messaging.</p>
+        </div>
+        
+        <!-- Login Form -->
+        <div class="login-body">
+            <!-- Error Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Login failed!</strong> Please check your username and password.
+            </div>
+            {% endif %}
+            
+            <!-- Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <input type="text" 
+                           name="username" 
+                           id="id_username" 
+                           placeholder="Enter your username"
+                           required
+                           autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input type="password" 
+                           name="password" 
+                           id="id_password" 
+                           placeholder="Enter your password"
+                           required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+            
+            <!-- Footer Info -->
+            <div style="margin-top: 30px; text-align: center; color: var(--secondary); font-size: 0.9rem;">
+                <p>For support, contact your system administrator.</p>
+                <p style="margin-top: 20px; font-size: 0.85rem;">
+                    <i class="fas fa-shield-alt"></i> Secure Government Portal
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

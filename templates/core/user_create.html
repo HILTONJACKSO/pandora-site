@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Create User{% endblock %}
+{% block page_title %}Create New User{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title">Create New User</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="username" class="required">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="required">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="first_name" class="required">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name" class="required">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="password" class="required">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <div class="form-help">Minimum 8 characters</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password2" class="required">Confirm Password</label>
+                    <input type="password" id="password2" name="password2" required>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="role" class="required">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="ADMIN">System Administrator</option>
+                        <option value="MICAT_REVIEWER">MICAT Reviewer/Editor</option>
+                        <option value="MAC_OFFICER">MAC PR Officer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mac">MAC</label>
+                    <select id="mac" name="mac">
+                        <option value="">Select MAC</option>
+                        {% for mac in macs %}
+                        <option value="{{ mac.id }}">{{ mac.acronym }} - {{ mac.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">Required for MAC Officers</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="phone">
+            </div>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="is_active" checked style="width: auto;">
+                    <span>Active (can login)</span>
+                </label>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Create User
+                </button>
+                <a href="{% url 'user_list' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
