@@ -11,11 +11,8 @@ KEY CONCEPTS:
 - STATIC/MEDIA: File handling for CSS and uploads
 """
 
-# import os
-# import dj_database_url
-# from pathlib import Path
-# from decouple import config
-
+import os
+import dj_database_url
 from pathlib import Path
 from decouple import config
 
@@ -31,15 +28,10 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 # DEBUG = os.environ.get('RENDER') != 'true'
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
-# ALLOWED_HOSTS
-# ALLOWED_HOSTS = [
-#     'localhost',
-#     '127.0.0.1',
-#     '.onrender.com',  # Allow all Render domains
-# ]
 
-# For production, you can be more specific:
-# ALLOWED_HOSTS = ['pandora-box.onrender.com', 'pandorabox.gov.lr']
+# Add Render.com to allowed hosts in production
+if 'RENDER' in os.environ:
+    ALLOWED_HOSTS.append('.onrender.com')
 
 # Application definition
 INSTALLED_APPS = [
@@ -56,7 +48,7 @@ INSTALLED_APPS = [
 # These run on every request in order
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # new for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',  # Manages user sessions
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',            # Security against CSRF attacks
@@ -89,38 +81,28 @@ WSGI_APPLICATION = 'pandora_config.wsgi.application'
 
 # DATABASE: PostgreSQL Configuration
 # Why PostgreSQL? Better for production, handles multiple users, reliable
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='pandora_box'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='postgres'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
-}
 
 # Database Configuration
-# if 'DATABASE_URL' in os.environ:
-#     # Production (Render)
-#     DATABASES = {
-#         'default': dj_database_url.config(
-#             default=os.environ.get('DATABASE_URL'),
-#             conn_max_age=600
-#         )
-#     }
-# else:
-#     # Development (Local)
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': config('DB_NAME', default='pandora_box'),
-#             'USER': config('DB_USER', default='postgres'),
-#             'PASSWORD': config('DB_PASSWORD', default='postgres'),
-#             'HOST': config('DB_HOST', default='localhost'),
-#             'PORT': config('DB_PORT', default='5432'),
-#         }
-#     }
+if 'DATABASE_URL' in os.environ:
+    # Production (Render)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
+        )
+    }
+else:
+    # Development (Local)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='pandora_box'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='postgres'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
+    }
 
 
 
@@ -165,7 +147,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise static file storage for production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (User uploads)
 # These are files users upload (documents, images, videos)
@@ -232,7 +215,8 @@ ADMINS = [
 ]
 MANAGERS = ADMINS
 
-# # CSRF Settings for Render
-# CSRF_TRUSTED_ORIGINS = [
-#     'https://*.onrender.com',
-# ]
+# CSRF Settings for Render
+if 'RENDER' in os.environ:
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.onrender.com',
+    ]
