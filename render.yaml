@@ -1,24 +1,28 @@
-# databases:
-#   - name: pandora-db
-#     databaseName: pandora_box
-#     user: pandora_user
-#     plan: free
+databases:
+  - name: pandora-db
+    databaseName: pandora_box
+    user: pandora_user
+    plan: free
 
-# services:
-#   - type: web
-#     name: pandora-box
-#     runtime: python
-#     plan: free
-#     buildCommand: "./build.sh"
-#     startCommand: "gunicorn pandora_config.wsgi:application"
-#     envVars:
-#       - key: PYTHON_VERSION
-#         value: 3.11.0
-#       - key: DATABASE_URL
-#         fromDatabase:
-#           name: pandora-db
-#           property: connectionString
-#       - key: SECRET_KEY
-#         generateValue: true
-#       - key: WEB_CONCURRENCY
-#         value: 4
+services:
+  - type: web
+    name: pandora-box
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn pandora_config.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.7
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pandora-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: RENDER
+        value: true
+      - key: WEB_CONCURRENCY
+        value: 4
