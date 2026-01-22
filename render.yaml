@@ -1,8 +1,5 @@
-databases:
-  - name: pandora-db
-    databaseName: pandora_box
-    user: pandora_user
-    plan: free
+# Render Blueprint for Pandora Box
+# Note: This configuration requires manual database setup if you already have a free tier database
 
 services:
   - type: web
@@ -15,9 +12,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.13.7
       - key: DATABASE_URL
-        fromDatabase:
-          name: pandora-db
-          property: connectionString
+        sync: false  # You'll need to manually add your database URL
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
